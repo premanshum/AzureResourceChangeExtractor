@@ -7,9 +7,9 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Admiral.Policies.Models;
-using Admiral.Rest.Models;
-using Admiral.Shared.DDD;
+using colonel.Policies.Models;
+using colonel.Rest.Models;
+using colonel.Shared.DDD;
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
@@ -20,7 +20,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using YamlDotNet.Serialization;
 
-namespace Admiral.Policies.Services
+namespace colonel.Policies.Services
 {
     public class CheckMetadataStorageService
     {

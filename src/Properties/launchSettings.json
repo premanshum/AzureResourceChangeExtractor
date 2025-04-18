@@ -1,0 +1,14 @@
+{
+    "profiles": {
+      "LocalDev": {
+        "commandName": "Project",
+        "commandLineArgs": "host start --port 5035 --pause-on-error --cors *",
+        "environmentVariables": {
+          "EnvCode": "d",
+          "ASPNETCORE_ENVIRONMENT": "LocalDevelopment"
+        },
+        "applicationUrl": "http://localhost:5014/"
+      }
+    }
+  }
+  

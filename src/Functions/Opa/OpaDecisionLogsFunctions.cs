@@ -9,17 +9,17 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using Admiral.Shared.DDD;
-using Admiral.Shared;
+using colonel.Shared.DDD;
+using colonel.Shared;
 using System.Linq;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
-using Admiral.Policies.Services;
+using colonel.Policies.Services;
 using System.IO.Compression;
 using Microsoft.Azure.Storage.Blob;
 
-namespace Admiral.Policies
+namespace colonel.Policies
 {
     public class OpaDecisionLogsFunctions
     {
@@ -55,7 +55,7 @@ namespace Admiral.Policies
                 var decisionId = decisionJson.Value<string>("decision_id");
                 switch (path)
                 {
-                    case "maersk/full_cap_check":
+                    case "ACME/full_cap_check":
                         //Store content in blob (can be above 64KB)
                         var cloudBlockBlob = decisionLogBlobs.GetBlockBlobReference($"{decisionId}.json");
                         tasks.Add(cloudBlockBlob.UploadTextAsync(decisionJson.ToString()));

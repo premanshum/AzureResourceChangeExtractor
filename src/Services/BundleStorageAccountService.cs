@@ -11,7 +11,7 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Newtonsoft.Json;
 
-namespace Admiral.Policies.Services
+namespace colonel.Policies.Services
 {
     public class BundleStorageAccountService
     {

@@ -11,7 +11,7 @@ using System.Net.Http.Headers;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Graph;
 
-namespace Admiral.Policies.Services
+namespace colonel.Policies.Services
 {
     internal class GraphAuthenticationProvider : IAuthenticationProvider
     {

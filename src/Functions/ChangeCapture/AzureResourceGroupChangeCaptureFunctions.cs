@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using Admiral.Core.Tasks;
-using Admiral.Policies.Properties;
-using Admiral.Policies.Services;
-using Admiral.Rest;
-using Admiral.Rest.Models;
-using Admiral.Shared;
+using colonel.Core.Tasks;
+using colonel.Policies.Properties;
+using colonel.Policies.Services;
+using colonel.Rest;
+using colonel.Rest.Models;
+using colonel.Shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -20,27 +20,27 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Admiral.Policies
+namespace colonel.Policies
 {
     public class AzureResourceGroupChangeCaptureFunctions
     {
-        private readonly IAdmiralClient _admiralClient;
+        private readonly IcolonelClient _colonelClient;
         private readonly ActivityLogQueryHelper _logAuditQueryHelper;
         private readonly AzureResourceGraphHelper _azureResourceGraphHelper;
         private readonly DigitalProductTwinStorageService _digitalProductTwinStorageService;
         private readonly IConfiguration _configuration;
-        private readonly IAdmiralUserContext _admiralUserContext;
+        private readonly IcolonelUserContext _colonelUserContext;
 
-        public AzureResourceGroupChangeCaptureFunctions(IAdmiralClient admiralClient, ActivityLogQueryHelper logAuditQueryHelper,
+        public AzureResourceGroupChangeCaptureFunctions(IcolonelClient colonelClient, ActivityLogQueryHelper logAuditQueryHelper,
             AzureResourceGraphHelper azureResourceGraphHelper, DigitalProductTwinStorageService digitalProductTwinStorageService,
-            IConfiguration configuration, IAdmiralUserContext admiralUserContext)
+            IConfiguration configuration, IcolonelUserContext colonelUserContext)
         {
-            _admiralClient = admiralClient;
+            _colonelClient = colonelClient;
             _logAuditQueryHelper = logAuditQueryHelper;
             _azureResourceGraphHelper = azureResourceGraphHelper;
             _digitalProductTwinStorageService = digitalProductTwinStorageService;
             _configuration = configuration;
-            _admiralUserContext = admiralUserContext;
+            _colonelUserContext = colonelUserContext;
         }
 
         [FunctionName(nameof(AzureResourceGroupChangeCaptureTimerTrigger_Test))]
@@ -48,9 +48,9 @@ namespace Admiral.Policies
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "policies/sourcetriggers/azureresourcegroups")] HttpRequest req,
             ILogger log, [DurableClient] IDurableClient starter)
         {
-            _admiralUserContext.AsAuthorized().EnsureInRole(AppRoles.Administrator);
+            _colonelUserContext.AsAuthorized().EnsureInRole(AppRoles.Administrator);
 
-            var response = await starter.StartNewAsAsyncOperation(_admiralUserContext, nameof(AzureResourceGroupChangeCapture), (object)"20m", new[] { new EntityReference("policies", "change_capture") }, null);
+            var response = await starter.StartNewAsAsyncOperation(_colonelUserContext, nameof(AzureResourceGroupChangeCapture), (object)"20m", new[] { new EntityReference("policies", "change_capture") }, null);
             return response.Result;
         }
 
@@ -64,7 +64,7 @@ namespace Admiral.Policies
                 return;
             }
 
-            var response = await starter.StartNewAsAsyncOperation(_admiralUserContext, nameof(AzureResourceGroupChangeCapture), (object)"6m", new[] { new EntityReference("policies", "change_capture") }, null);
+            var response = await starter.StartNewAsAsyncOperation(_colonelUserContext, nameof(AzureResourceGroupChangeCapture), (object)"6m", new[] { new EntityReference("policies", "change_capture") }, null);
             log.LogInformation("Started new AzureResourceGroupChangeCapture with id {0}", response.OrchestratorInstanceId);
         }
 
@@ -99,7 +99,7 @@ namespace Admiral.Policies
             if (affectedProducts.Length == 0)
             {
                 context.SetAsyncOperationStepStatus(2, AsyncOperationStepStatusEnum.Skipped);
-                context.SetAsyncOperationStatus(AsyncOperationStatusEnum.Completed, "No affected Admiral Products found in list for Resource Groups");
+                context.SetAsyncOperationStatus(AsyncOperationStatusEnum.Completed, "No affected colonel Products found in list for Resource Groups");
                 return;
             }
 
@@ -115,7 +115,7 @@ namespace Admiral.Policies
             }
             context.SetAsyncOperationStepStatus(2, AsyncOperationStepStatusEnum.Completed, affectedProducts.Length, affectedProducts.Length);
 
-            context.SetAsyncOperationStatus(AsyncOperationStatusEnum.Completed, $"Digital Product Twins updated for {affectedProducts.Length} Admiral Products");
+            context.SetAsyncOperationStatus(AsyncOperationStatusEnum.Completed, $"Digital Product Twins updated for {affectedProducts.Length} colonel Products");
         }
 
         [FunctionName(nameof(AzureResourceGroupDailyTimerTrigger))]
@@ -128,7 +128,7 @@ namespace Admiral.Policies
                 return;
             }
 
-            var response = await starter.StartNewAsAsyncOperation(_admiralUserContext, nameof(AzureResourceGroupTriggerAll), new[] { new EntityReference("policies", "change_capture") }, null);
+            var response = await starter.StartNewAsAsyncOperation(_colonelUserContext, nameof(AzureResourceGroupTriggerAll), new[] { new EntityReference("policies", "change_capture") }, null);
             log.LogInformation("Started new AzureResourceGroupTriggerAll with id {0}", response.Result);
         }
 
@@ -152,7 +152,7 @@ namespace Admiral.Policies
                 context.SetAsyncOperationStepStatus(1, AsyncOperationStepStatusEnum.Running, i, allProductCodes.Length);
             }
             context.SetAsyncOperationStepStatus(1, AsyncOperationStepStatusEnum.Completed, allProductCodes.Length, allProductCodes.Length);
-            context.SetAsyncOperationStatus(AsyncOperationStatusEnum.Completed, $"Digital Product Twins updated for {allProductCodes.Length} Admiral Products");
+            context.SetAsyncOperationStatus(AsyncOperationStatusEnum.Completed, $"Digital Product Twins updated for {allProductCodes.Length} colonel Products");
         }
 
 
@@ -162,7 +162,7 @@ namespace Admiral.Policies
         [FunctionName(nameof(GetAllProductCodes))]
         public async Task<string[]> GetAllProductCodes([ActivityTrigger] IDurableActivityContext context, ILogger log)
         {
-            var allProducts = await _admiralClient.GetProductsAsync();
+            var allProducts = await _colonelClient.GetProductsAsync();
 
             return allProducts.Select(p => p.Code).ToArray();
         }
@@ -194,16 +194,16 @@ namespace Admiral.Policies
         {
             var changedResourceGroups = context.GetInput<ChangedResourceGroups[]>();
 
-            log.LogInformation("Checking the following Resource Groups for matching products in Admiral: {0}",
+            log.LogInformation("Checking the following Resource Groups for matching products in colonel: {0}",
                 String.Join(", ", changedResourceGroups.Select(rg => $"{rg.SubscriptionId}/{rg.ResourceGroup}")));
 
-            ///1. Go through all RG and try to find it in Admiral
+            ///1. Go through all RG and try to find it in colonel
             ///2. If not there; skip, otherwise group by product Code to get unique products
             ///3. Return a nice strucutre
             var changedProducts = (await Task.WhenAll(changedResourceGroups.Select(async rg =>
             {
                 var id = $"subscriptions/{rg.SubscriptionId.ToLower()}/resourceGroups/{rg.ResourceGroup.ToLowerInvariant()}";
-                var product = await _admiralClient.GetAzureResourceGroupByIdWithHttpMessagesAsync(id);
+                var product = await _colonelClient.GetAzureResourceGroupByIdWithHttpMessagesAsync(id);
                 switch (product.Response.StatusCode)
                 {
                     case System.Net.HttpStatusCode.OK:
@@ -241,10 +241,10 @@ namespace Admiral.Policies
             var product = context.GetInput<AffectedProduct>();
             try
             {
-                var rgsInAdmiral = await _admiralClient.GetAzureResourceGroupsForProductAsync(product.ProductCode);
-                var environmentsInAdmiral = await _admiralClient.GetProductEnvironmentAsync(product.ProductCode);
+                var rgsIncolonel = await _colonelClient.GetAzureResourceGroupsForProductAsync(product.ProductCode);
+                var environmentsIncolonel = await _colonelClient.GetProductEnvironmentAsync(product.ProductCode);
 
-                var resourcesInAzure = (await Task.WhenAll(from rg in rgsInAdmiral
+                var resourcesInAzure = (await Task.WhenAll(from rg in rgsIncolonel
                                                            group rg by rg.SubscriptionId into subs
                                                            let query = $"resources | where resourceGroup in~ ({String.Join(',', subs.Select(rg => $"'{rg.Name}'").Distinct())}) | order by subscriptionId asc, resourceGroup asc"
                                                            select _azureResourceGraphHelper.QueryAsync(query, new[] { subs.Key })
@@ -252,7 +252,7 @@ namespace Admiral.Policies
                                         .SelectMany(r => r).ToArray();
 
 
-                ApplyAdmiralMetadataToResources(resourcesInAzure, rgsInAdmiral, environmentsInAdmiral);
+                ApplycolonelMetadataToResources(resourcesInAzure, rgsIncolonel, environmentsIncolonel);
 
                 await _digitalProductTwinStorageService.UpdateDigitalProductTwinAsync(product.ProductCode, (twin, metadata) =>
                 {
@@ -290,17 +290,17 @@ namespace Admiral.Policies
         }
 
 
-        private void ApplyAdmiralMetadataToResources(JObject[] resourcesInAzure, IList<AzureResourceGroup> rgsInAdmiral, ProductEnvironment environmentsInAdmiral)
+        private void ApplycolonelMetadataToResources(JObject[] resourcesInAzure, IList<AzureResourceGroup> rgsIncolonel, ProductEnvironment environmentsIncolonel)
         {
             foreach (var resource in resourcesInAzure)
             {
-                var rgInAzure = rgsInAdmiral.FirstOrDefault(rg => rg.SubscriptionId.Equals(resource.Value<string>("subscriptionId"), StringComparison.InvariantCultureIgnoreCase) &&
+                var rgInAzure = rgsIncolonel.FirstOrDefault(rg => rg.SubscriptionId.Equals(resource.Value<string>("subscriptionId"), StringComparison.InvariantCultureIgnoreCase) &&
                                                                   rg.Name.Equals(resource.Value<string>("resourceGroup"), StringComparison.InvariantCultureIgnoreCase));
 
                 if (rgInAzure == null) continue;
                 resource.Add("owningTeam", rgInAzure.Owner);
 
-                var env = environmentsInAdmiral.Environments.FirstOrDefault(e => e.Code == rgInAzure.EnvironmentCode);
+                var env = environmentsIncolonel.Environments.FirstOrDefault(e => e.Code == rgInAzure.EnvironmentCode);
 
                 if (env == null) continue;
 

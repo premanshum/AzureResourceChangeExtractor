@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Text;
 using Microsoft.Extensions.Options;
 
-namespace Admiral.Policies.Services
+namespace colonel.Policies.Services
 {
     public class LogAnalyticsQueryHttpClientFactory
     {

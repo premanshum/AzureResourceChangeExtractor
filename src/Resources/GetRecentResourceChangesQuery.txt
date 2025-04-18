@@ -1,0 +1,23 @@
+AzureActivity 
+| where TimeGenerated > ago({0})
+| where ActivityStatusValue == "Success"
+
+| where ResourceGroup !startswith("DATABRICKS-RG-")
+| where ResourceGroup !startswith("MC_")
+| where ResourceGroup != ""
+
+| where OperationNameValue !startswith("MICROSOFT.CLASSICCOMPUTE")
+| where OperationNameValue endswith("WRITE") or OperationNameValue endswith("DELETE") or OperationNameValue endswith("CREATE")
+| where OperationNameValue !in(
+     "MICROSOFT.COMPUTE/RESTOREPOINTCOLLECTIONS/RESTOREPOINTS/WRITE",
+     "MICROSOFT.COMPUTE/SNAPSHOTS/WRITE", "MICROSOFT.COMPUTE/SNAPSHOTS/DELETE", "MICROSOFT.COMPUTE/RESTOREPOINTCOLLECTIONS/RESTOREPOINTS/DELETE",
+     "MICROSOFT.STORAGE/STORAGEACCOUNTS/FILESERVICES/SHARES/DELETE", "MICROSOFT.CONTAINERINSTANCE/CONTAINERGROUPS/DELETE",
+     "MICROSOFT.INSIGHTS/COMPONENTS/ANNOTATIONS/WRITE", "MICROSOFT.INSIGHTS/DIAGNOSTICSETTINGS/WRITE", "MICROSOFT.PORTAL/DASHBOARDS/WRITE"
+     )
+
+
+| summarize NoOfChanges=count(), t_first=min(TimeGenerated), t_last=max(TimeGenerated) 
+        by SubscriptionId, ResourceGroup, 
+        PrincipalType=tostring(Authorization_d.evidence.principalType), 
+        PrincipalId=tostring(Authorization_d.evidence.principalId), 
+        Caller

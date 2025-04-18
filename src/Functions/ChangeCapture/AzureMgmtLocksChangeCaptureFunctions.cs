@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using Admiral.Core.Tasks;
-using Admiral.Policies.Services;
-using Admiral.Rest;
-using Admiral.Rest.Models;
-using Admiral.Shared;
+using colonel.Core.Tasks;
+using colonel.Policies.Services;
+using colonel.Rest;
+using colonel.Rest.Models;
+using colonel.Shared;
 using Azure.Identity;
 using Azure.ResourceManager.Resources;
 using Azure.ResourceManager.Resources.Models;
@@ -25,22 +25,22 @@ using Microsoft.Extensions.Options;
 using Microsoft.Graph;
 using Newtonsoft.Json.Linq;
 
-namespace Admiral.Policies
+namespace colonel.Policies
 {
     public class AzureMgmtLocksChangeCaptureFunctions
     {
-        private readonly IAdmiralClient _admiralClient;
-        private readonly IAdmiralUserContext _admiralUserContext;
+        private readonly IcolonelClient _colonelClient;
+        private readonly IcolonelUserContext _colonelUserContext;
         private readonly DigitalProductTwinStorageService _digitalProductTwinStorageService;
         private readonly IConfiguration _configuration;
         private readonly IOptions<AzureResourceGraphOptions> _options;
 
-        public AzureMgmtLocksChangeCaptureFunctions(IAdmiralClient admiralClient, IAdmiralUserContext admiralUserContext,
+        public AzureMgmtLocksChangeCaptureFunctions(IcolonelClient colonelClient, IcolonelUserContext colonelUserContext,
             DigitalProductTwinStorageService digitalProductTwinStorageService,
             IConfiguration configuration, IOptions<AzureResourceGraphOptions> options)
         {
-            _admiralClient = admiralClient;
-            _admiralUserContext = admiralUserContext;
+            _colonelClient = colonelClient;
+            _colonelUserContext = colonelUserContext;
             _digitalProductTwinStorageService = digitalProductTwinStorageService;
             _configuration = configuration;
             _options = options;
@@ -51,12 +51,12 @@ namespace Admiral.Policies
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "policies/sourcetriggers/azuremgmtlocks")] HttpRequest req,
             ILogger log, [DurableClient] IDurableClient starter)
         {
-            _admiralUserContext.AsAuthorized().EnsureInRole(AppRoles.Administrator);
+            _colonelUserContext.AsAuthorized().EnsureInRole(AppRoles.Administrator);
 
             var body = await req.ReadAsStringAsync();
             var products = String.IsNullOrEmpty(body) ? new string[] { } : JArray.Parse(body).Select(j => j.ToString()).ToArray();
 
-            var response = await starter.StartNewAsAsyncOperation(_admiralUserContext, nameof(AzureManagementLocksChangeCapture), products, new[] { new EntityReference("policies", "change_capture") }, null);
+            var response = await starter.StartNewAsAsyncOperation(_colonelUserContext, nameof(AzureManagementLocksChangeCapture), products, new[] { new EntityReference("policies", "change_capture") }, null);
             return response.Result;
         }
 
@@ -70,7 +70,7 @@ namespace Admiral.Policies
                 return;
             }
 
-            var response = await starter.StartNewAsAsyncOperation(_admiralUserContext, nameof(AzureManagementLocksChangeCapture), null, new[] { new EntityReference("policies", "change_capture") }, null);
+            var response = await starter.StartNewAsAsyncOperation(_colonelUserContext, nameof(AzureManagementLocksChangeCapture), null, new[] { new EntityReference("policies", "change_capture") }, null);
             log.LogInformation("Started new AzureManagementLocksChangeCapture with id {0}", response.OrchestratorInstanceId);
         }
 
@@ -140,7 +140,7 @@ namespace Admiral.Policies
         [FunctionName(nameof(GetAllSubscriptionIds))]
         public async Task<string[]> GetAllSubscriptionIds([ActivityTrigger] IDurableActivityContext context)
         {
-            var list = await _admiralClient.GetSubscriptionsAsync();
+            var list = await _colonelClient.GetSubscriptionsAsync();
             return list.Select(sub => sub.SubscriptionId).ToArray();
         }
         [FunctionName(nameof(GetAllManagementLocks))]

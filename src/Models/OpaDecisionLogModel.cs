@@ -4,7 +4,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Admiral.Policies.Models
+namespace colonel.Policies.Models
 {
     public class OpaDecisionLogModel
     {

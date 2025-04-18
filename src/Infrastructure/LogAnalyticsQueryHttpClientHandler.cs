@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
-namespace Admiral.Policies.Services
+namespace colonel.Policies.Services
 {
     internal class LogAnalyticsQueryHttpClientHandler : DelegatingHandler
     {

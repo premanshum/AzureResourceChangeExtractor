@@ -1,4 +1,4 @@
-using Admiral.Shared.DDD;
+using colonel.Shared.DDD;
 using Microsoft.Azure.Management.ResourceGraph;
 using Microsoft.Azure.Management.ResourceGraph.Models;
 using Microsoft.Extensions.Options;
@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Admiral.Policies.Services
+namespace colonel.Policies.Services
 {
     public class AzureResourceGraphHelper
     {

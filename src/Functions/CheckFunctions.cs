@@ -2,8 +2,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Admiral.Policies.Services;
-using Admiral.Shared;
+using colonel.Policies.Services;
+using colonel.Shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -12,16 +12,16 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Admiral.Policies
+namespace colonel.Policies
 {
     public class CheckFunctions
     {
-        private readonly IAdmiralUserContext _admiralUserContext;
+        private readonly IcolonelUserContext _colonelUserContext;
         private readonly CheckMetadataStorageService _checkMetadataStorageService;
 
-        public CheckFunctions(IAdmiralUserContext admiralUserContext, CheckMetadataStorageService checkMetadataStorageService)
+        public CheckFunctions(IcolonelUserContext colonelUserContext, CheckMetadataStorageService checkMetadataStorageService)
         {
-            _admiralUserContext = admiralUserContext;
+            _colonelUserContext = colonelUserContext;
             _checkMetadataStorageService = checkMetadataStorageService;
         }
 

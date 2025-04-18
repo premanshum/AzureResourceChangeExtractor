@@ -3,8 +3,8 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Admiral.Policies.Services;
-using Admiral.Shared;
+using colonel.Policies.Services;
+using colonel.Shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Storage.Blob;
@@ -14,17 +14,17 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Admiral.Policies
+namespace colonel.Policies
 {
     public class EvaluatePoliciesFunctions
     {
-        private readonly IAdmiralUserContext _admiralUserContext;
+        private readonly IcolonelUserContext _colonelUserContext;
         private readonly OpaHttpClientFactory _opaHttpClientFactory;
         private readonly DigitalProductTwinStorageService _digitalProductTwinStorageService;
 
-        public EvaluatePoliciesFunctions(IAdmiralUserContext admiralUserContext, OpaHttpClientFactory opaHttpClientFactory, DigitalProductTwinStorageService digitalProductTwinStorageService)
+        public EvaluatePoliciesFunctions(IcolonelUserContext colonelUserContext, OpaHttpClientFactory opaHttpClientFactory, DigitalProductTwinStorageService digitalProductTwinStorageService)
         {
-            _admiralUserContext = admiralUserContext;
+            _colonelUserContext = colonelUserContext;
             _opaHttpClientFactory = opaHttpClientFactory;
             _digitalProductTwinStorageService = digitalProductTwinStorageService;
         }
@@ -75,7 +75,7 @@ namespace Admiral.Policies
         public async Task<IActionResult> EvaluatePoliciesManual([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "policies/evaluate")] HttpRequest req,
             [Queue("product-twin-changes", Connection = "Policies")] IAsyncCollector<string> messages, ILogger log)
         {
-            _admiralUserContext.AsAuthorized().EnsureInRole(AppRoles.Administrator);
+            _colonelUserContext.AsAuthorized().EnsureInRole(AppRoles.Administrator);
 
             var body = await req.ReadAsStringAsync();
 

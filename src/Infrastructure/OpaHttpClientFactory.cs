@@ -2,7 +2,7 @@
 using System;
 using System.Net.Http;
 
-namespace Admiral.Policies.Services
+namespace colonel.Policies.Services
 {
     public class OpaHttpClientFactory
     {

@@ -8,28 +8,28 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using Admiral.Shared.DDD;
-using Admiral.Shared;
+using colonel.Shared.DDD;
+using colonel.Shared;
 using System.Linq;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
-using Admiral.Policies.Services;
+using colonel.Policies.Services;
 using System.IO.Compression;
 using Microsoft.Azure.Storage.Blob;
-using Admiral.Policies.Models;
+using colonel.Policies.Models;
 
-namespace Admiral.Policies
+namespace colonel.Policies
 {
     public class DecisionLogsFunctions
     {
-        private readonly IAdmiralUserContext _admiralUserContext;
+        private readonly IcolonelUserContext _colonelUserContext;
         private readonly DecisionLogStorageService _decisionLogStorageService;
         private readonly DecisionLogViewModelService _decisionLogViewModelService;
 
-        public DecisionLogsFunctions(IAdmiralUserContext admiralUserContext, DecisionLogStorageService decisionLogStorageService, DecisionLogViewModelService decisionLogViewModelService)
+        public DecisionLogsFunctions(IcolonelUserContext colonelUserContext, DecisionLogStorageService decisionLogStorageService, DecisionLogViewModelService decisionLogViewModelService)
         {
-            _admiralUserContext = admiralUserContext;
+            _colonelUserContext = colonelUserContext;
             _decisionLogStorageService = decisionLogStorageService;
             _decisionLogViewModelService = decisionLogViewModelService;
         }
@@ -67,7 +67,7 @@ namespace Admiral.Policies
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "products/{productCode}/policies/decisionlogs")] HttpRequest req,
             ILogger log, string productCode)
         {
-            _admiralUserContext.AsAuthorized().EnsureInRole(ProductRoles.All, AppRoles.Administrator);
+            _colonelUserContext.AsAuthorized().EnsureInRole(ProductRoles.All, AppRoles.Administrator);
 
             var daysback = req.Query.ContainsKey("daysback") ? int.TryParse(req.Query["daysback"].First(), out var i) ? i : 30 : 30;
 
@@ -79,7 +79,7 @@ namespace Admiral.Policies
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "products/{productCode}/policies/decisionlogs/latest")] HttpRequest req,
             ILogger log, string productCode)
         {
-            _admiralUserContext.AsAuthorized().EnsureInRole(ProductRoles.All, AppRoles.Administrator);
+            _colonelUserContext.AsAuthorized().EnsureInRole(ProductRoles.All, AppRoles.Administrator);
 
             var decisionLogs = await _decisionLogViewModelService.GetLatestAsync(productCode);
             if (decisionLogs != null && decisionLogs.Count > 0)
@@ -90,7 +90,7 @@ namespace Admiral.Policies
         public async Task<IActionResult> ListLatestDecisionLogs(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "policies/decisionlogs")] HttpRequest req, ILogger log)
         {
-            _admiralUserContext.AsAuthorized().EnsureInRole(AppRoles.Administrator);
+            _colonelUserContext.AsAuthorized().EnsureInRole(AppRoles.Administrator);
 
             var decisionLogs = await _decisionLogViewModelService.GetLatestAsync();
             return new OkObjectResult(decisionLogs);
@@ -101,7 +101,7 @@ namespace Admiral.Policies
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "products/{productCode}/policies/decisionlogs/details/{versionId}")] HttpRequest req,
             ILogger log, string productCode, string versionId)
         {
-            _admiralUserContext.AsAuthorized().EnsureInRole(ProductRoles.All, AppRoles.Administrator);
+            _colonelUserContext.AsAuthorized().EnsureInRole(ProductRoles.All, AppRoles.Administrator);
 
             var decisionLogs = await _decisionLogStorageService.GetDecisionLogByVersionAsync(productCode, versionId);
             if (decisionLogs != null)

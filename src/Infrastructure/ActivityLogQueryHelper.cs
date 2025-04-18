@@ -1,4 +1,4 @@
-using Admiral.Shared.DDD;
+using colonel.Shared.DDD;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Data;
@@ -8,7 +8,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Admiral.Policies.Services
+namespace colonel.Policies.Services
 {
     public class ActivityLogQueryHelper
     {

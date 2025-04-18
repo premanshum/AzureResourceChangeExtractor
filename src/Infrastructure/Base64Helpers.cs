@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Admiral.Policies
+namespace colonel.Policies
 {
     public static class Base64Helpers
     {

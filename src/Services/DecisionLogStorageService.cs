@@ -7,15 +7,15 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Admiral.Policies.Models;
-using Admiral.Rest.Models;
+using colonel.Policies.Models;
+using colonel.Rest.Models;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Admiral.Policies.Services
+namespace colonel.Policies.Services
 {
     public class DecisionLogStorageService
     {

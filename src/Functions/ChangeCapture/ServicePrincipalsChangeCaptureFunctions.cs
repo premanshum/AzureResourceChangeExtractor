@@ -4,11 +4,11 @@ using System.Collections.Concurrent;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using Admiral.Core.Tasks;
-using Admiral.Policies.Services;
-using Admiral.Rest;
-using Admiral.Rest.Models;
-using Admiral.Shared;
+using colonel.Core.Tasks;
+using colonel.Policies.Services;
+using colonel.Rest;
+using colonel.Rest.Models;
+using colonel.Shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -19,22 +19,22 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Newtonsoft.Json.Linq;
 
-namespace Admiral.Policies
+namespace colonel.Policies
 {
     public class ServicePrincipalsChangeCaptureFunctions
     {
-        private readonly IAdmiralClient _admiralClient;
-        private readonly IAdmiralUserContext _admiralUserContext;
+        private readonly IcolonelClient _colonelClient;
+        private readonly IcolonelUserContext _colonelUserContext;
         private readonly GraphServiceClient _graphServiceClient;
         private readonly DigitalProductTwinStorageService _digitalProductTwinStorageService;
         private readonly IConfiguration _configuration;
 
-        public ServicePrincipalsChangeCaptureFunctions(IAdmiralClient admiralClient, IAdmiralUserContext admiralUserContext,
+        public ServicePrincipalsChangeCaptureFunctions(IcolonelClient colonelClient, IcolonelUserContext colonelUserContext,
             GraphServiceClient graphServiceClient, DigitalProductTwinStorageService digitalProductTwinStorageService,
             IConfiguration configuration)
         {
-            _admiralClient = admiralClient;
-            _admiralUserContext = admiralUserContext;
+            _colonelClient = colonelClient;
+            _colonelUserContext = colonelUserContext;
             _graphServiceClient = graphServiceClient;
             _digitalProductTwinStorageService = digitalProductTwinStorageService;
             _configuration = configuration;
@@ -45,12 +45,12 @@ namespace Admiral.Policies
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "policies/sourcetriggers/aadserviceprincipals")] HttpRequest req,
             ILogger log, [DurableClient] IDurableClient starter)
         {
-            _admiralUserContext.AsAuthorized().EnsureInRole(AppRoles.Administrator);
+            _colonelUserContext.AsAuthorized().EnsureInRole(AppRoles.Administrator);
 
             var body = await req.ReadAsStringAsync();
             var products = String.IsNullOrEmpty(body) ? new string[] { } : JArray.Parse(body).Select(j => j.ToString()).ToArray();
 
-            var response = await starter.StartNewAsAsyncOperation(_admiralUserContext, nameof(ServicePrincipalGroupChangeCapture), products, new[] { new EntityReference("policies", "change_capture") }, null);
+            var response = await starter.StartNewAsAsyncOperation(_colonelUserContext, nameof(ServicePrincipalGroupChangeCapture), products, new[] { new EntityReference("policies", "change_capture") }, null);
             return response.Result;
         }
 
@@ -64,7 +64,7 @@ namespace Admiral.Policies
                 return;
             }
 
-            var response = await starter.StartNewAsAsyncOperation(_admiralUserContext, nameof(ServicePrincipalGroupChangeCapture), null, new[] { new EntityReference("policies", "change_capture") }, null);
+            var response = await starter.StartNewAsAsyncOperation(_colonelUserContext, nameof(ServicePrincipalGroupChangeCapture), null, new[] { new EntityReference("policies", "change_capture") }, null);
             log.LogInformation("Started new AzureResourceGroupChangeCapture with id {0}", response.OrchestratorInstanceId);
         }
 
@@ -107,7 +107,7 @@ namespace Admiral.Policies
         [FunctionName(nameof(GetAllProductCodesSP))]
         public async Task<string[]> GetAllProductCodesSP([ActivityTrigger] string[] productFilter)
         {
-            var allProducts = await _admiralClient.GetProductsAsync();
+            var allProducts = await _colonelClient.GetProductsAsync();
 
             var products = allProducts.Select(p => p.Code);
             if (productFilter?.Length > 0)
@@ -125,12 +125,12 @@ namespace Admiral.Policies
             {
                 var userCache = new ConcurrentDictionary<string, Task<JObject>>();
 
-                var servicePrincipalsInAdmiral = await _admiralClient.GetAzureADServicePrincipalsForProductAsync(productCode);
-                var environmentsInAdmiral = await _admiralClient.GetProductEnvironmentAsync(productCode);
+                var servicePrincipalsIncolonel = await _colonelClient.GetAzureADServicePrincipalsForProductAsync(productCode);
+                var environmentsIncolonel = await _colonelClient.GetProductEnvironmentAsync(productCode);
 
 
-                var spObjects = await Task.WhenAll(from sp in servicePrincipalsInAdmiral
-                                                   select BuildSPObjectAsync(sp, environmentsInAdmiral, userCache, log));
+                var spObjects = await Task.WhenAll(from sp in servicePrincipalsIncolonel
+                                                   select BuildSPObjectAsync(sp, environmentsIncolonel, userCache, log));
 
 
                 await _digitalProductTwinStorageService.UpdateDigitalProductTwinAsync(productCode, (twin, metadata) =>
@@ -163,12 +163,12 @@ namespace Admiral.Policies
             return hasChanges;
         }
 
-        private async Task<JObject> BuildSPObjectAsync(AzureADServicePrincipalListReponse sp, ProductEnvironment environmentsInAdmiral,
+        private async Task<JObject> BuildSPObjectAsync(AzureADServicePrincipalListReponse sp, ProductEnvironment environmentsIncolonel,
             ConcurrentDictionary<string, Task<JObject>> userCache, ILogger log)
         {
 
             var data = new JObject(new JProperty("objectId", sp.ServicePrincipalObjectId));
-            ApplyAdmiralMetadataToSp(data, sp, environmentsInAdmiral);
+            ApplycolonelMetadataToSp(data, sp, environmentsIncolonel);
             try
             {
                 var aadSp = await _graphServiceClient.ServicePrincipals[sp.ServicePrincipalObjectId].Request()
@@ -251,11 +251,11 @@ namespace Admiral.Policies
             return data;
         }
 
-        private void ApplyAdmiralMetadataToSp(JObject spObject, AzureADServicePrincipalListReponse sp, ProductEnvironment environmentsInAdmiral)
+        private void ApplycolonelMetadataToSp(JObject spObject, AzureADServicePrincipalListReponse sp, ProductEnvironment environmentsIncolonel)
         {
             spObject.Add("owningTeam", sp.Owner);
 
-            var env = environmentsInAdmiral.Environments.FirstOrDefault(e => e.Code == sp.EnvironmentCode);
+            var env = environmentsIncolonel.Environments.FirstOrDefault(e => e.Code == sp.EnvironmentCode);
 
             if (env == null) return;
 

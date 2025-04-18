@@ -3,9 +3,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using Admiral.Shared;
+using colonel.Shared;
 
-namespace Admiral.Policies.Services
+namespace colonel.Policies.Services
 {
     internal class OpaHttpClientHandler : DelegatingHandler
     {

@@ -8,24 +8,24 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using Admiral.Shared.DDD;
-using Admiral.Shared;
+using colonel.Shared.DDD;
+using colonel.Shared;
 using System.Linq;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
-using Admiral.Policies.Services;
+using colonel.Policies.Services;
 
-namespace Admiral.Policies
+namespace colonel.Policies
 {
     public class OpaBundlesApiFunctions
     {
-        private readonly IAdmiralUserContext _admiralUserContext;
+        private readonly IcolonelUserContext _colonelUserContext;
         private readonly BundleStorageAccountService _storageAccountService;
 
-        public OpaBundlesApiFunctions(IAdmiralUserContext admiralUserContext, BundleStorageAccountService storageAccountService)
+        public OpaBundlesApiFunctions(IcolonelUserContext colonelUserContext, BundleStorageAccountService storageAccountService)
         {
-            _admiralUserContext = admiralUserContext;
+            _colonelUserContext = colonelUserContext;
             _storageAccountService = storageAccountService;
         }
 
@@ -38,7 +38,7 @@ namespace Admiral.Policies
 
             return new FileContentResult(content, new Microsoft.Net.Http.Headers.MediaTypeHeaderValue("application/x-gzip"));
 
-            //_admiralUserContext.AsAuthorized().EnsureInRole(AppRoles.All, ProductRoles.All);
+            //_colonelUserContext.AsAuthorized().EnsureInRole(AppRoles.All, ProductRoles.All);
         }
     }
 }

@@ -5,14 +5,14 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Admiral.Rest.Models;
+using colonel.Rest.Models;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Admiral.Policies.Services
+namespace colonel.Policies.Services
 {
     public class DecisionLogViewModelService
     {

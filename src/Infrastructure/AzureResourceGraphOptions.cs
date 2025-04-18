@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Admiral.Policies.Services
+namespace colonel.Policies.Services
 {
     public class AzureResourceGraphOptions
     {
