@@ -1,1 +1,4 @@
-Hello
+Azure Resource change extractor is a tool that detects any change to any resource in a given set of subscriptions. The tool can be customized to watch over a few properties only rather than the whole set of properties. The output is a JSON file for each resource type in a subscription. This can be customized into CSV file format as well. One of the major benefits of such tools is that all the information becomes handy without actually going into Azure, personally, and skimming through the activity logs. In addition to that, if there are hundreds of subscriptions then it is going to be a long search even to detect a small change.
+One of the other advantages is to understand a pattern of change. Say, if there is a change in storage size, over a period of time then, the next course of actions can be decided, like the life span of data, quality and value of data etc.
+The tool creates Digital-Twins for the tenants’ subscriptions. This is basically the cloud footprint of the Tenant. 
+WIP....
